@@ -69,6 +69,7 @@ class Downloader:
                  loop=None, notebook=None, overwrite=False, headers=None):
 
         self.max_conn = max_conn
+        self.loop = None
         self._start_loop(loop)
 
         # Configure progress bars
@@ -86,7 +87,9 @@ class Downloader:
 
     def _start_loop(self, loop):
         # Setup asyncio loops
-        if not loop:
+        if self.loop and self.loop.is_running():
+            self.run_until_complete = self.loop.run_until_complete
+        elif not loop:
             aio_pool = ThreadPoolExecutor(1)
             self.loop = asyncio.new_event_loop()
             self.run_until_complete = partial(run_in_thread, aio_pool, self.loop)
